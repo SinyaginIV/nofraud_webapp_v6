@@ -143,5 +143,5 @@ def download():
         return jsonify({'error': 'Файл не найден.'}), 404
     return send_file(files[0], as_attachment=True)
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000)
+#if __name__ == '__main__':
+#   app.run(host="0.0.0.0", port=5000)
