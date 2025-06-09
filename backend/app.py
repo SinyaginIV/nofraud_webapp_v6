@@ -12,7 +12,7 @@ CORS(app)
 
 @app.route("/")
 def index():
-    return "Hello, Railway is working!"
+    return send_from_directory('frontend', 'index.html')
 
 MODEL_DIR = 'model'
 PROCESSED_DIR = 'processed'
