@@ -6,4 +6,4 @@ matplotlib
 seaborn
 fpdf
 gunicorn
-flask_cors
+flask_corsgunicorn
