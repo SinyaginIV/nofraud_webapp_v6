@@ -10,6 +10,10 @@ from sklearn.ensemble import RandomForestClassifier
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/")
+def index():
+    return "Hello, Railway is working!"
+
 MODEL_DIR = 'model'
 PROCESSED_DIR = 'processed'
 
