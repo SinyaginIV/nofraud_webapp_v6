@@ -1,5 +1,4 @@
-from flask import Flask, request, jsonify, send_file
-from flask import send_from_directory
+from flask import Flask, send_from_directory, request, jsonify, send_file
 from flask_cors import CORS
 import pandas as pd
 import joblib
@@ -13,7 +12,7 @@ CORS(app)
 
 @app.route("/")
 def index():
-    return send_from_directory('../frontend', 'index.html')
+    return send_from_directory(app.static_folder, 'index.html')
 
 MODEL_DIR = 'model'
 PROCESSED_DIR = 'processed'
