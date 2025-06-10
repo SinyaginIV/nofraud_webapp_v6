@@ -1,0 +1,10 @@
+flask
+pandas
+scikit-learn
+joblib
+matplotlib
+seaborn
+fpdf
+gunicorn
+flask_cors
+gunicorn
