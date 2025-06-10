@@ -50,7 +50,7 @@ def upload():
         except Exception as e:
             return jsonify({'error': f'Ошибка энкодинга: {str(e)}'}), 400
 
-        features = ['Amount', 'Region', 'DeviceType', 'IsAbroad', 'TxCountLastHour', 'IsNight', 'Hour']
+        features = ['Amount', 'Region', 'DeviceType', 'IsAbroad', 'TxCountLastHour', 'IsNight']
         if not all(col in df.columns for col in features):
             return jsonify({'error': 'Некорректные признаки в файле.'}), 400
 
