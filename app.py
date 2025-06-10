@@ -12,7 +12,7 @@ CORS(app)
 
 @app.route("/")
 def index():
-    return send_from_directory('../frontend', 'index.html')
+    return send_from_directory("static", "index.html")
 
 MODEL_DIR = 'model'
 PROCESSED_DIR = 'processed'
@@ -137,3 +137,6 @@ def download():
     if not files:
         return jsonify({'error': 'Файл не найден.'}), 404
     return send_file(files[0], as_attachment=True)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)
