@@ -29,7 +29,7 @@ def upload():
         le_device = joblib.load(f'{MODEL_DIR}/le_device.pkl')
 
         file = request.files['file']
-        model_type = request.form.get('modelType', 'TEST')
+        model_type = request.form.get('modelType', 'TEST').strip().upper()
 
         df = pd.read_csv(file)
         df['Hour'] = pd.to_datetime(df['DateTime']).dt.hour
