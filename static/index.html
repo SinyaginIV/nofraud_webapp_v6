@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>nofraud! v3.4</title>
-<style>
+  <meta charset="UTF-8">
+  <title>nofraud! v6.12.15</title>
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -346,6 +347,7 @@ h2 {
 button#button_train_model {
     background-color: hotpink;
 }
+
 </style>
 </head>
 <body>
@@ -354,29 +356,51 @@ button#button_train_model {
       <img src="/static/logo_nofraud.png" id="logo">
     </div>
     <div id="menu-icon" onclick="toggleMenu()">☰</div>
-    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
   </div>
 
-  <div id="sideMenu">
-    <!-- Переключатели -->
-  </div>
+  <div id="sideMenu" class="hidden">
+
+<label class="switch">
+  <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+  <span class="slider"></span>
+  Темная тема
+</label>
+
+<label class="switch">
+  <input type="checkbox" id="autoDarkToggle" onchange="toggleAutoDark()">
+  <span class="slider"></span>
+  Авто темная тема
+</label>
+
+<label class="switch">
+  <input type="checkbox" id="flaskLogsToggle" onchange="toggleLogs('flask')">
+  <span class="slider"></span>
+  Логи Flask-сервера
+</label>
+
+<label class="switch">
+  <input type="checkbox" id="httpLogsToggle" onchange="toggleLogs('http')">
+  <span class="slider"></span>
+  Логи HTTP-сервера
+</label>
+</div>
 
   <div style="text-align: center; margin-top: 100px;">
     <h1 style="font-size: 36px;">nofraud! v3.4</h1>
-    <div style="margin: 10px;">
-      <label for="modelSelect"><strong>Выбор модели:</strong></label>
-      <select id="modelSelect">
-        <option value="test">TEST (предобученная)</option>
-        <option value="new">NEW (пользовательская)</option>
-      </select>
-    </div>
+<div style="margin: 10px;">
+  <label for="modelSelect"><strong>Выбор модели:</strong></label>
+  <select id="modelSelect">
+    <option value="test">TEST (предобученная)</option>
+    <option value="new">NEW (пользовательская)</option>
+  </select>
+</div>
     <input type="file" id="fileInput"><br>
     <button onclick="uploadFile()">Проверить</button>
-    <br>
-    <input type="file" id="trainFile" style="margin-top:50px;">
-    <br>
-    <button onclick="trainModel()" id="button_train_model">Обучить!</button>
-    <br>
+<br>
+<input type="file" id="trainFile" style="margin-top:50px;">
+<br>
+<button onclick="trainModel()" id="button_train_model" ">Обучить!</button>
+<br>
     <button id="downloadCsv" style="display:none;">Скачать CSV</button>
     <button id="downloadPdf" style="display:none;">Скачать PDF</button>
     <div id="overlay" class="hidden"></div>
@@ -388,66 +412,100 @@ button#button_train_model {
     </div>
     <div id="result"></div>
     <div id="previewTable"></div>
-    <!-- Блоки приветствия и инструкции -->
+
+<!-- Блоки приветствия и инструкции -->
+<div id="infoBoxes" style="text-align:center; margin-top:20px;">
+  <div id="welcomeBox" style="display:inline-block; background:#e8f5e9; border-radius:10px; padding:15px; margin:10px; max-width:400px; position:relative;">
+    <span onclick="document.getElementById('welcomeBox').style.display='none'" style="position:absolute; top:5px; right:10px; cursor:pointer;">❌</span>
+    <h3>👋 Добро пожаловать!</h3>
+    <p>Это веб-приложение предназначено для выявления мошеннических транзакций на основе анализа CSV-файлов с операциями.</p>
+  </div>
+  <div id="instructionBox" style="display:inline-block; background:#e3f2fd; border-radius:10px; padding:15px; margin:10px; max-width:400px; position:relative;">
+    <span onclick="document.getElementById('instructionBox').style.display='none'" style="position:absolute; top:5px; right:10px; cursor:pointer;">❌</span>
+    <h3>📖 Инструкция</h3>
+    <p>1. Загрузите файл CSV<br>2. Нажмите «Проверить»<br>3. Просмотрите таблицу и графики<br>4. Скачайте результаты</p>
+  </div>
+</div>
+
   </div>
 
   <div class="chart">
     <img id="chart1" src="" style="max-width:100%; display:none;">
-    <p id="chart1-desc" style="display:none;">Этот график отображает распределение сумм всех выявленных мошеннических транзакций...</p>
+    <p id="chart1-desc" style="display:none;">
+      Этот график отображает распределение сумм всех выявленных мошеннических транзакций. 
+      Он построен на основе значений из столбца 'Amount', где транзакции были помечены как фрод. 
+      График помогает определить, какие диапазоны сумм наиболее подвержены мошенничеству.
+    </p>
   </div>
+
   <div class="chart">
     <img id="chart2" src="" style="max-width:100%; display:none;">
-    <p id="chart2-desc" style="display:none;">Этот график показывает, в какие часы суток чаще всего происходят мошеннические транзакции...</p>
+    <p id="chart2-desc" style="display:none;">
+      Этот график показывает, в какие часы суток чаще всего происходят мошеннические транзакции. 
+      Он строится на основе столбца 'Hour', извлечённого из временной метки 'DateTime'. 
+      График помогает выявить пиковые часы фрода, например ночное время.
+    </p>
   </div>
 
-<script>
-const API_URL = 'https://awake-comfort-production.up.railway.app';
+  <script>
+    function toggleMenu() {
+      document.getElementById("sideMenu").classList.toggle("show");
+    }
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
 
-function toggleMenu() {
-  document.getElementById("sideMenu").classList.toggle("show");
-}
-function toggleDarkMode() {
-  document.body.classList.toggle("dark-mode");
-}
-
-let csvReady = false;
+    let csvReady = false;
 function uploadFile() {
   const input = document.getElementById('fileInput');
   if (!input.files[0]) {
     alert("Пожалуйста, выберите CSV-файл перед проверкой.");
     return;
   }
+
   const loader = document.querySelector('.loader');
   loader.style.display = 'block';
   loader.classList.remove('done');
+
+  const result = document.getElementById('result');
   const tableContainer = document.getElementById('previewTable');
   const chart1 = document.getElementById('chart1');
   const chart2 = document.getElementById('chart2');
+
   const data = new FormData();
   data.append('file', input.files[0]);
+
   const modelType = document.getElementById('modelSelect').value;
   data.append('modelType', modelType);
+
   document.getElementById('overlay').classList.remove('hidden');
 
-  fetch(`${API_URL}/upload`, { method: 'POST', body: data })
+  fetch('/upload', {
+    method: 'POST',
+    body: data
+  })
   .then(response => response.json())
   .then(data => {
     loader.classList.add('done');
     setTimeout(() => {
       loader.style.display = 'none';
       document.getElementById('overlay').classList.add('hidden');
-      if (data.error) {
-        alert("Ошибка от сервера: " + data.error);
-        return;
-      }
+
       const table = document.createElement('table');
       const headerRow = document.createElement('tr');
+if (data.error) {
+  alert("Ошибка от сервера: " + data.error);
+  loader.style.display = 'none';
+  document.getElementById('overlay').classList.add('hidden');
+  return;
+}
       data.columns.forEach(col => {
         const th = document.createElement('th');
         th.textContent = col;
         headerRow.appendChild(th);
       });
       table.appendChild(headerRow);
+
       data.rows.forEach(row => {
         const tr = document.createElement('tr');
         if (row[row.length - 2] === 1) tr.classList.add('fraud');
@@ -458,16 +516,19 @@ function uploadFile() {
         });
         table.appendChild(tr);
       });
+
       tableContainer.innerHTML = '';
       tableContainer.appendChild(table);
-      chart1.src = `${API_URL}/static/fraud_amount.png`;
-      chart2.src = `${API_URL}/static/fraud_by_hour.png`;
+      chart1.src = 'http://localhost:5000/static/fraud_amount.png';
+      chart2.src = 'http://localhost:5000/static/fraud_by_hour.png';
       chart1.style.display = 'block';
       chart2.style.display = 'block';
+
       document.getElementById("chart1-desc").style.display = 'block';
       document.getElementById("chart2-desc").style.display = 'block';
       document.getElementById("downloadCsv").style.display = 'inline';
       document.getElementById("downloadPdf").style.display = 'inline';
+
       csvReady = true;
     }, 2000);
   })
@@ -477,39 +538,15 @@ function uploadFile() {
   });
 }
 
-document.getElementById('downloadCsv').onclick = function() {
-  if (!csvReady) return;
-  window.open(`${API_URL}/download`, '_blank');
-};
-document.getElementById('downloadPdf').onclick = function() {
-  if (!csvReady) return;
-  window.open(`${API_URL}/report`, '_blank');
-};
-
-function trainModel() {
-  const trainInput = document.getElementById('trainFile');
-  if (!trainInput.files[0]) {
-    alert("Пожалуйста, выберите обучающий файл CSV.");
-    return;
-  }
-  const data = new FormData();
-  data.append('file', trainInput.files[0]);
-  fetch(`${API_URL}/train`, { method: 'POST', body: data })
-  .then(res => res.json())
-  .then(resp => { alert(resp.message || "Обучение завершено."); })
-  .catch(() => { alert("Ошибка при обучении модели."); });
-}
-
-window.onload = function () {
-  if (localStorage.getItem("autoDark") === "true") {
-    document.body.classList.add("dark-mode");
-    document.getElementById("darkModeToggle").checked = true;
-    document.getElementById("autoDarkToggle").checked = true;
-  } else {
-    document.getElementById("autoDarkToggle").checked = false;
-  }
-};
-</script>
+    document.getElementById('downloadCsv').onclick = function() {
+      if (!csvReady) return;
+      window.open('/download', '_blank');
+    };
+    document.getElementById('downloadPdf').onclick = function() {
+      if (!csvReady) return;
+      window.open('/report', '_blank');
+    };
+  </script>
 
 <div id="authOverlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; display:flex; justify-content:center; align-items:center;">
   <div style="background:white; padding:30px; border-radius:8px; box-shadow:0 0 20px black; text-align:center;">
@@ -520,6 +557,7 @@ window.onload = function () {
     <p id="authError" style="color:red; display:none;">Неверный логин или пароль</p>
   </div>
 </div>
+
 <script>
 function authorize() {
   const login = document.getElementById('login').value;
@@ -532,7 +570,73 @@ function authorize() {
 }
 </script>
 
+
 <div id="logContainer"></div>
+
+<script>
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+  }
+
+  function toggleAutoDark() {
+    const enabled = document.getElementById("autoDarkToggle").checked;
+    localStorage.setItem("autoDark", enabled);
+  }
+
+  function toggleLogs(type) {
+    const logBox = document.getElementById("logContainer");
+    if (type === 'flask') {
+      if (document.getElementById("flaskLogsToggle").checked) {
+        logBox.style.display = 'block';
+        logBox.innerText = "[Flask] * Running on http://127.0.0.1:5000\n[Flask] Debugger is active...";
+      } else {
+        logBox.style.display = 'none';
+      }
+    } else if (type === 'http') {
+      if (document.getElementById("httpLogsToggle").checked) {
+        logBox.style.display = 'block';
+        logBox.innerText = "[HTTP] Serving on port 8000...\n[HTTP] GET /index_v3_4.html 200 OK";
+      } else {
+        logBox.style.display = 'none';
+      }
+    }
+  }
+
+function trainModel() {
+  const trainInput = document.getElementById('trainFile');
+  if (!trainInput.files[0]) {
+    alert("Пожалуйста, выберите обучающий файл CSV.");
+    return;
+  }
+
+  const data = new FormData();
+  data.append('file', trainInput.files[0]);
+
+  fetch('/train', {
+    method: 'POST',
+    body: data
+  })
+  .then(res => res.json())
+  .then(resp => {
+    alert(resp.message || "Обучение завершено.");
+  })
+  .catch(() => {
+    alert("Ошибка при обучении модели.");
+  });
+}
+
+
+  window.onload = function () {
+    if (localStorage.getItem("autoDark") === "true") {
+      document.body.classList.add("dark-mode");
+      document.getElementById("darkModeToggle").checked = true;
+      document.getElementById("autoDarkToggle").checked = true;
+    } else {
+      document.getElementById("autoDarkToggle").checked = false;
+    }
+  };
+</script>
 
 </body>
 </html>
