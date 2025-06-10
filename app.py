@@ -31,7 +31,11 @@ def upload():
         file = request.files['file']
         model_type = request.form.get('modelType', 'TEST').strip().upper()
 
-        df = pd.read_csv(file)
+        # df = pd.read_csv(file)
+        try:
+            df = pd.read_csv(file, encoding='utf-8')
+        except:
+            df = pd.read_csv(file, encoding='cp1251')  # Fallback для ANSI / Windows-1251
         df['Hour'] = pd.to_datetime(df['DateTime']).dt.hour
 
         if 'PredictedFraud' in df.columns:
